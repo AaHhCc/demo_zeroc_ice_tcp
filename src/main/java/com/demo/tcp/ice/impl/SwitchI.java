@@ -44,8 +44,8 @@ public class SwitchI extends _ISwitchDisp {
 			LOGGER.info("ipConn local:" + ipConn.localAddress + ":" + ipConn.localPort);
 		}
 
-		// 如果需要在心跳的时候传数据 就没办法使用自带的心跳方式 必须客户端隔断时间调用心跳接口来自己实现 这样就可以在心跳的时候传数据
 		LOGGER.info("heartbeat");
+		// 心跳业务处理
 
 		// 如果已经存在不更新缓存
 		if (switchCallbackPrxCacheMap.containsKey(sn)) {
