@@ -22,7 +22,7 @@ public class SwitchI extends _ISwitchDisp {
 	private static Logger LOGGER = Logger.getLogger(SwitchI.class);
 	private static final long serialVersionUID = 1L;
 
-	// 客户端连接缓存
+	// 客户端连接缓存 XXX 超时清除? Redis?
 	public static ConcurrentHashMap<String, SwitchCallbackPrxCache> switchCallbackPrxCacheMap = new ConcurrentHashMap<>();
 	private SwitchCallbackPrxCache switchCallbackPrxCache = null;
 
