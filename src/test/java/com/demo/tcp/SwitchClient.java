@@ -7,7 +7,9 @@ import org.apache.log4j.Logger;
 import com.demo.tcp.ice.impl.SwitchCallbackI;
 import com.demo.tcp.main.Main;
 
+import Ice.Connection;
 import Ice.LocalException;
+import Ice.TCPConnectionInfo;
 import Ice.UserException;
 import switcher.Callback_ISwitch_heartbeat;
 import switcher.ISwitchPrx;
@@ -73,8 +75,37 @@ public class SwitchClient extends Ice.Application {
 				+ switchPushPrx.ice_getConnection().getEndpoint()._toString());
 
 		try {
-//			while (true) {
+			String ip = ""; // 缓存当前ip
+			int port = 0; // 缓存当前端口
+			
+			while (true) {
+
+				// ip或端口不一样时，重置适配器（服务端重启的情况）
+				if (switchPushPrx == null) {
+					break;
+				}
+				
+				Connection connection = null;
+				String localIp = null;
+				int localPort = 0;
+				try {
+					connection = switchPushPrx.ice_getConnection();
+					TCPConnectionInfo connectionInfo = (TCPConnectionInfo) connection.getInfo();
+					localIp = connectionInfo.localAddress;
+					localPort = connectionInfo.localPort;
+					LOGGER.info("localIp:" + localIp + "; localPort:" + localPort);
+					if (!ip.equals(localIp) || port != localPort) {
+						ip = localIp;
+						port = localPort;
+						LOGGER.info("ip or port is change. set adapter.");
+						connection.setAdapter(adapter);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
 				LOGGER.info("SwitchClient is begin heartbeat.");
+				
 				// 使用异步的方式
 				switchPushPrx.begin_heartbeat(id, sn, 1, 2, new Callback_ISwitch_heartbeat() {
 
@@ -98,11 +129,12 @@ public class SwitchClient extends Ice.Application {
 				});
 
 				LOGGER.info("SwitchClient is end heartbeat.\n");
-//				Thread.sleep(10000);
-//			}
-			// 可以使用以上的while(true) Thread.sleep(HEARTBEAT_TIME);的方式定时请求保持tcp连接的心跳，这个方式是为了每次心跳都传参
+				Thread.sleep(5000);
+			}
+			// 可以使用以上的while(true)
+			// Thread.sleep(HEARTBEAT_TIME);的方式定时请求保持tcp连接的心跳，这个方式是为了每次心跳都传参
 			// 也可以使用一下的方式，使用ice自带的功能保持tcp的连接心跳，无法每次心跳传参
-			holdHeartbeat(switchPushPrx.ice_getConnection());
+			// holdHeartbeat(switchPushPrx.ice_getConnection());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -124,6 +156,7 @@ public class SwitchClient extends Ice.Application {
 	 * @author jerome_s@qq.com
 	 * @param con
 	 */
+	@SuppressWarnings("unused")
 	private void holdHeartbeat(Ice.Connection con) {
 
 		con.setCallback(new Ice.ConnectionCallback() {

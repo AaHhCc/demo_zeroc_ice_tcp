@@ -25,7 +25,7 @@ public class Main extends Ice.Application {
 			public void run() {
 				LOGGER.info("send thread start.");
 				try {
-					Thread.sleep(20000);
+					Thread.sleep(30000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
